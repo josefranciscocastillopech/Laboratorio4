@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="description" content="Laboratorio 4: un juego de supervivencia en un laboratorio tras un brote. Historia, personajes, enemigos y el evento de lanzamiento.">
+  <title>Laboratorio 4 — Archivo</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/favicon-64.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip" href="#view">Saltar al contenido</a>
+
+  <header class="top">
+    <a class="brand" href="#/inicio"><img src="icons/favicon-64.png" alt="" width="34" height="34"> LABORATORIO <b>4</b></a>
+    <nav id="nav" aria-label="Principal">
+      <a href="#/inicio" data-r="inicio">Inicio</a>
+      <a href="#/historia" data-r="historia">Historia</a>
+      <a href="#/personajes" data-r="personajes">Personajes</a>
+      <a href="#/enemigos" data-r="enemigos">Enemigos</a>
+      <a href="#/controles" data-r="controles">Controles</a>
+      <a href="#/evento" data-r="evento">Evento</a>
+      <a href="#/creditos" data-r="creditos">Créditos</a>
+      <a href="#/ajustes" data-r="ajustes">Ajustes</a>
+    </nav>
+    <button id="install" class="btn small" hidden>Instalar app</button>
+  </header>
+
+  <div id="offline" class="offline" role="status" hidden>Sin conexión: se muestran los datos guardados.</div>
+  <main id="view" tabindex="-1"></main>
+
+  <footer class="foot">
+    <p>Laboratorio 4 · Proyecto escolar de videojuegos · Datos desde la API del juego.</p>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

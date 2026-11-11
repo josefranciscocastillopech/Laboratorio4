@@ -1,0 +1,14 @@
+[build]
+  publish = "public"
+
+# La API no tiene CORS: el navegador la consulta a través de este proxy del mismo dominio.
+[[redirects]]
+  from = "/api/*"
+  to = "https://laboratorio4api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"

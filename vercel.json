@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://laboratorio4api.onrender.com/api/:path*" }
+  ]
+}

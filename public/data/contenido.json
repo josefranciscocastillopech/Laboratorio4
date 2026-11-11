@@ -1,0 +1,34 @@
+{
+  "evento": {
+    "titulo": "Noche de Videojuegos: lanzamiento de Laboratorio 4",
+    "descripcion": "Presentación del juego, demo jugable en vivo y convivencia con el equipo de desarrollo.",
+    "fecha": "2026-11-20T10:00:00-05:00",
+    "duracionHoras": 3,
+    "lugar": "Universidad Tecnológica de Cancún — Edificio B",
+    "direccion": "Carretera Cancún–Aeropuerto, km 11.5, Cancún, Quintana Roo",
+    "mapa": "https://www.google.com/maps/search/?api=1&query=Universidad+Tecnol%C3%B3gica+de+Canc%C3%BAn",
+    "programa": [
+      { "hora": "10:00", "actividad": "Bienvenida y presentación del equipo" },
+      { "hora": "10:30", "actividad": "Historia y personajes del juego" },
+      { "hora": "11:15", "actividad": "Demo jugable en vivo" },
+      { "hora": "12:00", "actividad": "Torneo de supervivencia y premios" }
+    ]
+  },
+  "dinamicas": [
+    { "icono": "🧭", "titulo": "Exploración", "texto": "Recorre las instalaciones del laboratorio, busca pistas y aprovecha el entorno para sobrevivir." },
+    { "icono": "⚔️", "titulo": "Combate", "texto": "Enfrenta a criaturas mutantes con distintos patrones de ataque usando armas y habilidades." },
+    { "icono": "🛡️", "titulo": "Habilidades", "texto": "Cada personaje tiene una habilidad única, como el Escudo de Jason o el Deslizamiento de Milena." }
+  ],
+  "eventos": [
+    { "n": "01", "titulo": "La explosión", "texto": "Un accidente en la planta de investigación liberó radiación.", "img": "img/evento-explosion.png" },
+    { "n": "02", "titulo": "La contaminación", "texto": "Las cosechas fueron afectadas y distribuidas.", "img": "img/evento-contaminacion.png" },
+    { "n": "03", "titulo": "El brote", "texto": "El consumo masivo causó mutaciones en humanos y animales.", "img": "img/evento-brote.png" }
+  ],
+  "enemigos": [
+    { "nombre": "Sorbos", "tipo": "Mutante", "texto": "Experimentos fallidos que atacan en grupo.", "img": "img/enemigo-sorbos.png" },
+    { "nombre": "Doctor Yiba", "tipo": "Jefe", "texto": "Científico responsable de los experimentos del Laboratorio 4.", "img": "img/enemigo-doctor-yiba.png" },
+    { "nombre": "Homúnculos", "tipo": "Mutante", "texto": "Criaturas mutadas con distintas habilidades.", "img": "img/enemigo-homunculos.png" },
+    { "nombre": "Variaciones", "tipo": "Mutante", "texto": "Existen múltiples tipos de Sorbos con patrones de ataque diferentes.", "img": "img/enemigo-variaciones.png" }
+  ],
+  "herramientas": ["Unity", "Aseprite", "Pixelorama", "Visual Studio Code", "Reaper", "Git / GitHub"]
+}
