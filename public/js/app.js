@@ -22,20 +22,11 @@ const api = {
   personaje: (id) => getJson(`${API}/personajes/${encodeURIComponent(id)}`),
   controles: () => getJson(`${API}/controles`),
   creditos: () => getJson(`${API}/creditos`),
-  evento: () => getJson(`${API}/evento`),
+  ranking: (limite = 10) => getJson(`${API}/ranking?limite=${limite}`),
 };
 let _contenido;
-// Contenido local (respaldo). Si la API tiene GET /evento, sus datos reemplazan al evento del JSON.
-const conTope = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('tiempo agotado')), ms))]);
-async function cargarContenido() {
-  const local = await getJson('data/contenido.json');
-  try {
-    const ev = await conTope(api.evento(), 8000);
-    if (ev && ev.fecha && ev.lugar) local.evento = { ...local.evento, ...ev };
-  } catch { /* la API aún no tiene /evento: se usa data/contenido.json */ }
-  return local;
-}
-const contenido = () => (_contenido ??= cargarContenido().catch((e) => { _contenido = null; throw e; }));
+// Contenido que la API no tiene (evento, dinámicas, línea de tiempo, herramientas).
+const contenido = () => (_contenido ??= getJson('data/contenido.json').catch((e) => { _contenido = null; throw e; }));
 
 const store = {
   read(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
@@ -46,7 +37,6 @@ const state = {
   sel: store.read('sel', null),               // personaje elegido: { id, nombre }
   texto: store.read('texto', 'normal'),
   fx: store.read('fx', true),
-  registro: store.read('registro', null),
 };
 const save = () => { for (const k of Object.keys(state)) store.write(k, state[k]); };
 
@@ -114,7 +104,7 @@ async function vInicio() {
   <h2>Próximo evento</h2>
   <div class="card pad"><h3>${esc(ev.titulo)}</h3>
     <p class="muted">${fechaLarga(ev.fecha)} · ${esc(ev.lugar)}</p>
-    <a class="btn small" href="#/evento">Detalles y registro</a></div>`;
+    <a class="btn small" href="#/evento">Detalles y ranking</a></div>`;
 }
 
 async function vHistoria() {
@@ -192,21 +182,14 @@ async function vPersonaje(id) {
 }
 
 async function vEnemigos() {
-  const todos = (await api.personajes().catch(() => null)) ?? [];
-  const lista = todos.filter((p) => /enemig/i.test(p.rol));
-  const c = await contenido();
-  const items = lista.length
-    ? lista.map((p) => `
+  const lista = ((await api.personajes()) ?? []).filter((p) => /enemig/i.test(p.rol));
+  return `<h1>Enemigos</h1><p class="lead">Criaturas y experimentos que encontrarás en el laboratorio.</p>
+  ${lista.length ? `<div class="grid">${lista.map((p) => `
     <article class="card"><img class="cover" src="${esc(foto(p))}" alt="${esc(p.nombre)}" loading="lazy">
       <div class="body"><h3>${esc(p.nombre)}</h3><div><span class="tag red">${esc(p.habilidad || p.rol)}</span></div>
       <p class="muted small">${esc((p.biografia || '').slice(0, 140))}…</p>
-      <a class="btn small" href="#/personaje/${p.id}">Ver ficha</a></div></article>`)
-    : c.enemigos.map((e) => `
-    <article class="card"><img class="cover" src="${esc(e.img)}" alt="${esc(e.nombre)}" loading="lazy">
-      <div class="body"><h3>${esc(e.nombre)}</h3><div><span class="tag red">${esc(e.tipo)}</span></div>
-      <p class="muted small">${esc(e.texto)}</p></div></article>`);
-  return `<h1>Enemigos</h1><p class="lead">Criaturas y experimentos que encontrarás en el laboratorio.</p>
-  <div class="grid">${items.join('')}</div>`;
+      <a class="btn small" href="#/personaje/${p.id}">Ver ficha</a></div></article>`).join('')}</div>`
+    : '<p class="muted">Todavía no hay enemigos registrados.</p>'}`;
 }
 
 async function vControles() {
@@ -217,7 +200,7 @@ async function vControles() {
     : '<p class="muted">Aún no hay controles registrados.</p>'}`;
 }
 
-/* Evento: cuenta regresiva, calendario y registro */
+/* Evento: cuenta regresiva, calendario y ranking (API) */
 let timer;
 const fechaLarga = (iso) => new Intl.DateTimeFormat('es-MX', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(iso));
 
@@ -242,8 +225,7 @@ function descargarICS(ev) {
 
 async function vEvento() {
   const { evento: ev } = await contenido();
-  setTimeout(() => { tick(ev.fecha); timer = setInterval(() => tick(ev.fecha), 1000); });
-  const r = state.registro;
+  setTimeout(() => { tick(ev.fecha); timer = setInterval(() => tick(ev.fecha), 1000); cargarRanking(); });
   return `<span class="kicker">Evento de videojuegos</span><h1>${esc(ev.titulo)}</h1>
   <p class="lead">${esc(ev.descripcion)}</p>
   <div class="count" id="count-evento" aria-live="off"></div>
@@ -255,16 +237,30 @@ async function vEvento() {
   <div class="row" style="margin-top:14px"><button class="btn" data-act="ics">Añadir al calendario</button></div>
   <h2>Programa</h2>
   <ul class="prog card pad">${ev.programa.map((p) => `<li><b>${esc(p.hora)}</b><span>${esc(p.actividad)}</span></li>`).join('')}</ul>
-  <h2>Regístrate</h2>
-  <div id="reg">${r ? regOk(r) : regForm()}</div>`;
+  <h2>🏆 Ranking de jugadores</h2>
+  <div id="ranking">${loading('Cargando ranking…')}</div>`;
 }
-const regOk = (r) => `<p class="msg">¡Listo, ${esc(r.nombre)}! Te registraste con ${r.boletos} lugar(es). Tu registro se guardó en este dispositivo.</p>
-  <button class="btn ghost small" data-act="unreg">Cancelar registro</button>`;
-const regForm = () => `<form class="grid1" id="regForm">
-  <label>Nombre<input name="nombre" required maxlength="60" autocomplete="name"></label>
-  <label>Correo<input name="correo" type="email" required autocomplete="email"></label>
-  <label>Lugares<select name="boletos"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
-  <button class="btn" type="submit">Reservar lugar</button></form>`;
+const MEDALLAS = ['🥇', '🥈', '🥉'];
+const tiempo = (seg) => `${Math.floor(seg / 60)}:${String(Math.floor(seg % 60)).padStart(2, '0')}`;
+const fechaCorta = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium' }).format(d); };
+
+async function cargarRanking() {
+  const box = $('#ranking'); if (!box) return;
+  try {
+    const [lista, pers] = await Promise.all([api.ranking(10), api.personajes().catch(() => [])]);
+    if (!$('#ranking')) return;                       // el usuario cambió de página
+    const nombre = (id) => (pers ?? []).find((p) => p.id === id)?.nombre ?? '';
+    box.innerHTML = lista?.length
+      ? `<ol class="rank">${lista.map((r, i) => `
+        <li><span class="pos">${MEDALLAS[i] ?? i + 1}</span>
+          <div class="who"><strong>${esc(r.playerName)}</strong>
+            <span class="muted small">${[nombre(r.characterId), tiempo(r.time), fechaCorta(r.date)].filter(Boolean).map(esc).join(' · ')}</span></div>
+          <b class="pts">${Number(r.score).toLocaleString('es-MX')}</b></li>`).join('')}</ol>`
+      : '<p class="muted">Todavía no hay puntuaciones. ¡Sé el primero!</p>';
+  } catch (e) {
+    if ($('#ranking')) $('#ranking').innerHTML = `${errorBox(e)}`;
+  }
+}
 
 async function vCreditos() {
   const [c, k] = await Promise.all([api.creditos(), contenido()]);
@@ -340,18 +336,10 @@ document.addEventListener('click', (e) => {
     renderGrid();
   } else if (b.dataset.act === 'retry') route();
   else if (b.dataset.act === 'ics') contenido().then((c) => descargarICS(c.evento));
-  else if (b.dataset.act === 'unreg') { state.registro = null; save(); $('#reg').innerHTML = regForm(); }
   else if (b.dataset.act === 'clear-favs') { state.favs = []; save(); route(); }
   else if (b.dataset.act === 'clear-sel') { state.sel = null; save(); route(); }
 });
 document.addEventListener('input', (e) => { if (e.target.id === 'q') { pv.q = e.target.value; renderGrid(); } });
-document.addEventListener('submit', (e) => {
-  if (e.target.id !== 'regForm') return;
-  e.preventDefault();
-  const d = new FormData(e.target);
-  state.registro = { nombre: d.get('nombre').trim(), correo: d.get('correo').trim(), boletos: Number(d.get('boletos')) };
-  save(); $('#reg').innerHTML = regOk(state.registro);
-});
 
 /* ---------- PWA: instalación, conexión y service worker ---------- */
 let deferredPrompt;
@@ -375,4 +363,4 @@ window.addEventListener('hashchange', route);
 route();
 
 // Con internet, guarda en segundo plano los datos de la API para poder abrir cualquier sección sin conexión.
-if (navigator.onLine) setTimeout(() => ['historia', 'personajes', 'controles', 'creditos'].forEach((r) => fetch(`${API}/${r}`).catch(() => {})), 3000);
+if (navigator.onLine) setTimeout(() => ['historia', 'personajes', 'controles', 'creditos', 'ranking?limite=10'].forEach((r) => fetch(`${API}/${r}`).catch(() => {})), 3000);

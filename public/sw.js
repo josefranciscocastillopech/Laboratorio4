@@ -1,14 +1,13 @@
 // Service worker: la app abre sin conexión y los datos de la API quedan en caché.
-const VERSION = 'v10';
+const VERSION = 'v11';
 const SHELL = `lab4-shell-${VERSION}`;
 const DATA = `lab4-data-${VERSION}`;
 const SHELL_FILES = [
   './', 'index.html', 'css/styles.css', 'js/app.js', 'js/config.js', 'manifest.webmanifest',
   'data/contenido.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-64.png', 'img/logo.png',
-  'img/portada.png', 'img/historia-ciudad.png', 'img/personaje-jason.png', 'img/personaje-milena.png',
+  'img/portada.png', 'img/historia-ciudad.png',
   'img/tarjeta-historia.png', 'img/tarjeta-personajes.png', 'img/tarjeta-enemigos.png', 'img/tarjeta-controles.png',
   'img/evento-explosion.png', 'img/evento-contaminacion.png', 'img/evento-brote.png',
-  'img/enemigo-sorbos.png', 'img/enemigo-doctor-yiba.png', 'img/enemigo-homunculos.png', 'img/enemigo-variaciones.png',
 ];
 
 self.addEventListener('install', (e) => {

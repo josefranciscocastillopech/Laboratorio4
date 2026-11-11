@@ -138,3 +138,11 @@ form.grid1 { display: grid; gap: 12px; max-width: 460px; }
   .ev img { width: 80px; height: 60px; }
   .hero { min-height: 320px; }
 }
+
+/* Ranking */
+.rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-width: 640px; }
+.rank li { display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.rank li:nth-child(1) { border-color: var(--red); }
+.rank .pos { min-width: 32px; text-align: center; font-size: 1.3rem; font-weight: 800; color: var(--muted); }
+.rank .who { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.rank .pts { color: var(--red); font-size: 1.25rem; font-variant-numeric: tabular-nums; }
